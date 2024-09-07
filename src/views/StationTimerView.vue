@@ -72,7 +72,6 @@ const removeAlarm = () => {
   isSettingAlarm.value = false;
 };
 
-
 const calculateTravelTime = (start: Station | null, end: Station | null): number | null => {
   if (!start || !end || !selectedLine.value) {
     return null;
@@ -180,7 +179,7 @@ const addFavoriteRoute = () => {
       });
       store.favoriteRoutes = [...favoriteRoutes.value]; // Save to store
     } else {
-      console.log("該路線已經存在於收藏中");
+      console.log('該路線已經存在於收藏中');
     }
   }
 };
@@ -231,28 +230,50 @@ const travelTimeFormatted = computed(() => {
 const selectedDirection = ref<'forward' | 'backward'>('forward');
 
 watch(selectedDirection, (newDirection) => {
-    startStation.value = null;
-    endStation.value = null;
-    selectedStationType.value = 'start'
+  startStation.value = null;
+  endStation.value = null;
+  selectedStationType.value = 'start';
 });
 
 watch(selectedLine, (newLine) => {
-    startStation.value = null;
-    endStation.value = null;
-    selectedStationType.value = 'start'
+  startStation.value = null;
+  endStation.value = null;
+  selectedStationType.value = 'start';
 });
 
 const onStationSelected = (station: Station) => {
+  const list1 = ['蘆洲站', '三民高中站', '徐匯中學站', '三和國中站', '三重國小站'];
+  const list2 = [
+    '迴龍站',
+    '丹鳳站',
+    '輔大站',
+    '新莊站',
+    '頭前庄站',
+    '先嗇宮站',
+    '三重站',
+    '菜寮站',
+    '台北橋站'
+  ];
   if (selectedStationType.value === 'start') {
     // 選擇起點站時，檢查終點是否在起點之後
     if (endStation.value) {
-      const startIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
-        .findIndex(s => s.code === station.code);
-      const endIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
-        .findIndex(s => s.code === endStation.value.code);
-      
+      const startIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === station.code);
+      const endIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === endStation.value.code);
+
       if (startIndex > endIndex) {
         // alert('起點不能在終點後面。請重新選擇起點站。');
+        return;
+      }
+      if (
+        (list1.includes(station.name) && list2.includes(endStation.value.name)) ||
+        (list2.includes(station.name) && list1.includes(endStation.value.name))
+      ) {
         return;
       }
     }
@@ -260,13 +281,23 @@ const onStationSelected = (station: Station) => {
   } else if (selectedStationType.value === 'end') {
     // 選擇終點站時，檢查起點是否在終點之前
     if (startStation.value && selectedLine.value) {
-      const startIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
-        .findIndex(s => s.code === startStation.value?.code);
-      const endIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
-        .findIndex(s => s.code === station.code);
+      const startIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === startStation.value?.code);
+      const endIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === station.code);
 
       if (startIndex > endIndex) {
         // alert('終點不能在起點之前。請重新選擇終點站。');
+        return;
+      }
+      if (
+        (list1.includes(startStation.value.name) && list2.includes(station.name)) ||
+        (list2.includes(startStation.value.name) && list1.includes(station.name))
+      ) {
         return;
       }
     }
@@ -306,7 +337,6 @@ const getStationsBetween = (start: Station | null, end: Station | null): Station
   }
 };
 
-
 const onRouteSelect = (line: MRTLine) => {
   selectedLine.value = line;
   console.log('Selected line:', line); // 檢查這裡是否有正確的路線資料
@@ -334,10 +364,11 @@ const startCountdown = () => {
   showAlert.value = false;
   isSettingAlarm.value = true;
   countdownTime.value = travelTime.value;
-  
+
   interval = setInterval(() => {
     countdownTime.value--;
-    if (countdownTime.value <= 0) { // 更正為 countdownTime.value
+    if (countdownTime.value <= 0) {
+      // 更正為 countdownTime.value
       // Play sound
       const audio = new Audio('/440.mp3');
       audio.play();
@@ -356,10 +387,9 @@ const startCountdown = () => {
 };
 
 const sendMessage = () => {
-    const message = JSON.stringify({
-    name:"notify",
-    data: 
-    `{
+  const message = JSON.stringify({
+    name: 'notify',
+    data: `{
         "title": "Notification Title",
         "body": "This is a notification body"
     }`
@@ -367,12 +397,12 @@ const sendMessage = () => {
     //   \"title\": \"Notification Title\",
     //   \"body\": \"This is a notification body\"
     // }\"`
-    });
+  });
 
-    console.log("Sending message to Flutter:", message);
-    // Use postMessage to send data to Flutter
-    flutterObject.postMessage(message);
-}
+  console.log('Sending message to Flutter:', message);
+  // Use postMessage to send data to Flutter
+  flutterObject.postMessage(message);
+};
 
 // 根據方向選擇顯示不同的站點
 const getStationsForDirection = (line: MRTLine, direction: 'forward' | 'backward') => {
@@ -412,15 +442,19 @@ const getFirstAndLastStation = computed(() => {
                 class="route-button"
                 :class="{ 'selected-route': selectedLine?.lineid === line.lineid }"
                 @click="onRouteSelect(line)"
-                :style="{ borderColor: getButtonColor(line.lineid), backgroundColor: selectedLine?.lineid === line.lineid ? getButtonColor(line.lineid) : 'transparent' }"
-
-                
+                :style="{
+                  borderColor: getButtonColor(line.lineid),
+                  backgroundColor:
+                    selectedLine?.lineid === line.lineid
+                      ? getButtonColor(line.lineid)
+                      : 'transparent'
+                }"
               >
                 {{ line.lineName }}
               </button>
             </div>
           </section>
-      
+
           <!-- 主內容區域 -->
           <div class="content">
             <!-- 動態顯示選取路線的所有站點 -->
@@ -453,7 +487,10 @@ const getFirstAndLastStation = computed(() => {
                 </label>
               </div>
               <div class="flex items-center justify-center my-2">
-                <label class="radio-label" :class="{ 'start-active': selectedStationType === 'start' }">
+                <label
+                  class="radio-label"
+                  :class="{ 'start-active': selectedStationType === 'start' }"
+                >
                   <input type="radio" v-model="selectedStationType" value="start" />
                   選取起點站
                 </label>
@@ -462,7 +499,7 @@ const getFirstAndLastStation = computed(() => {
                   選取終點站
                 </label>
               </div>
-      
+
               <!-- 顯示選取的起點和終點 -->
               <p class="text-grey-500 mt-4 mb-2 px-4">{{ selectedLine.lineName }}的站點</p>
               <div class="stations-buttons">
@@ -485,13 +522,21 @@ const getFirstAndLastStation = computed(() => {
               </div>
             </section>
           </div>
-      
+
           <!-- 固定在頁面底部的區塊 -->
           <div class="bottom-buttons">
-            <BaseButton :disabled="!(startStation && endStation)" class="w-1/2 mr-2" @click="addFavoriteRoute">
+            <BaseButton
+              :disabled="!(startStation && endStation)"
+              class="w-1/2 mr-2"
+              @click="addFavoriteRoute"
+            >
               加入收藏
             </BaseButton>
-            <BaseButton :disabled="!(startStation && endStation)" class="w-1/2 ml-2 base-button--set-alarm-button" @click="startCountdown">
+            <BaseButton
+              :disabled="!(startStation && endStation)"
+              class="w-1/2 ml-2 base-button--set-alarm-button"
+              @click="startCountdown"
+            >
               設定鬧鐘
             </BaseButton>
           </div>
@@ -501,13 +546,14 @@ const getFirstAndLastStation = computed(() => {
       <template #tab1>
         <div class="py-4">
           <p class="text-grey-500 mt-4 mb-2 px-4">我的收藏路線</p>
-          
-          
+
           <div class="favorites-container">
             <div v-for="(route, index) in favoriteRoutes" :key="index" class="favorite-route">
               <div class="favorite-content">
-                <div class="color-block" :style="{ backgroundColor: getButtonColor(route.line?.lineid)}">
-                </div>
+                <div
+                  class="color-block"
+                  :style="{ backgroundColor: getButtonColor(route.line?.lineid) }"
+                ></div>
                 <p>{{ route.start?.name }} - {{ route.end?.name }}</p>
                 <button @click="removeFavoriteRoute(index)" class="delete-favorite-button">
                   <img src="../assets/images/delete.svg" alt="Delete" class="icon" />
@@ -518,7 +564,6 @@ const getFirstAndLastStation = computed(() => {
               </div>
             </div>
           </div>
-        
         </div>
         <BaseDialog
           v-model="arrivalDialogOpen"
@@ -536,7 +581,6 @@ const getFirstAndLastStation = computed(() => {
           negative-text="關閉"
           @onNegativeClick="onRemoveClick"
         />
-
       </template>
     </ServiceTabsView>
   </main>

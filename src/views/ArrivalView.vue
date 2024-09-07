@@ -5,6 +5,7 @@ import magicon from '../iconsinuse/magifier.svg';
 import transicon from '../iconsinuse/transfer.svg';
 import bikeicon from '../iconsinuse/bike.svg';
 import lockicon from '../iconsinuse/locker.svg';
+import accessicon from '../iconsinuse/access.svg';
 
 const route = useRoute();
 const endStation = route.query.endStation as string;
@@ -35,12 +36,12 @@ const tiles = [
   },
   {
     id: 2,
-    title: '附近YouBike',
-    subtitle: 'Nearby YouBike',
-    icon: bikeicon,
+    title: '無障礙設施',
+    subtitle: 'Accessibility',
+    icon: accessicon,
     size: 'medium',
-    route: '/qna',
-    external: true
+    route: '/noob',
+    external: false
   },
   {
     id: 3,
@@ -49,7 +50,7 @@ const tiles = [
     icon: transicon,
     size: 'medium',
     route: '/coupon',
-    external: true
+    external: false
   },
   {
     id: 4,
@@ -57,8 +58,8 @@ const tiles = [
     subtitle: 'Station Lockers',
     icon: lockicon,
     size: 'medium',
-    route: 'https://9a89-211-23-28-236.ngrok-free.app/',
-    external: true
+    route: '/locker',
+    external: false
   }
 ];
 </script>
