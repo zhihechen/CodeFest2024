@@ -243,6 +243,8 @@ watch(selectedLine, (newLine) => {
 });
 
 const onStationSelected = (station: Station) => {
+  const list1 = ["蘆洲站", "三民高中站", "徐匯中學站", "三和國中站", "三重國小站"];
+  const list2 = ["迴龍站", "丹鳳站", "輔大站", "新莊站", "頭前庄站", "先嗇宮站", "三重站", "菜寮站", "台北橋站"];
   if (selectedStationType.value === 'start') {
     // 選擇起點站時，檢查終點是否在起點之後
     if (endStation.value) {
@@ -253,6 +255,12 @@ const onStationSelected = (station: Station) => {
       
       if (startIndex > endIndex) {
         // alert('起點不能在終點後面。請重新選擇起點站。');
+        return;
+      }
+      if (
+        (list1.includes(station.name) && list2.includes(endStation.value.name)) ||
+        (list2.includes(station.name) && list1.includes(endStation.value.name))
+      ) {
         return;
       }
     }
@@ -267,6 +275,12 @@ const onStationSelected = (station: Station) => {
 
       if (startIndex > endIndex) {
         // alert('終點不能在起點之前。請重新選擇終點站。');
+        return;
+      }
+      if (
+        (list1.includes(startStation.value.name) && list2.includes(station.name)) ||
+        (list2.includes(startStation.value.name) && list1.includes(station.name))
+      ) {
         return;
       }
     }
