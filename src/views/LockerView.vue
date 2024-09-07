@@ -1,162 +1,165 @@
 <template>
-    <div>
-      <h1>置物櫃查詢</h1>
-      <!-- <form @submit.prevent="getLockerInfo">
-        <input type="text" v-model="stationName" placeholder="請輸入站名" required />
-        <button type="submit">取得資訊</button>
-      </form> -->
-  
-      <div id="result">
-        <table v-if="lockerData.length > 0" id="resultTable">
-          <thead>
-            <tr>
-              <th>站名</th>
-              <th>置物櫃大小</th>
-              <th>位置</th>
-              <th>費率</th>
-              <th>剩餘可用數目</th>
-              <th>總數目</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in lockerData" :key="item.StationName + item.Size">
-              <td>{{ item.StationName }}</td>
-              <td>{{ item.Size }}</td>
-              <td>{{ item.LockerDescription }}</td>
-              <td>{{ item.payment }}</td>
-              <td>{{ item.QuantityAvailable }}</td>
-              <td>{{ item.Total }}</td>
-            </tr>
-          </tbody>
-        </table>
+  <div>
+    <div id="stationInfo">
+      <h1 class="title" v-if="stationName">{{ stationName }}置物櫃</h1>
+    </div>
+    <div id="result">
+      <div v-if="lockerData.length > 0" id="resultList">
+        <div v-for="item in lockerData" :key="item.StationName + item.Size" class="locker-item">
+          <table>
+            <tbody>
+              <tr>
+                <th>置物櫃大小</th>
+                <td>{{ item.Size }}</td>
+              </tr>
+              <tr>
+                <th>位置</th>
+                <td>{{ item.LockerDescription }}</td>
+              </tr>
+              <tr>
+                <th>費率</th>
+                <td>{{ item.payment }}</td>
+              </tr>
+              <tr>
+                <th>剩餘可用數目</th>
+                <td>{{ item.QuantityAvailable }}</td>
+              </tr>
+              <tr>
+                <th>總數目</th>
+                <td>{{ item.Total }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        stationName: '',
-        lockerData: []
-      };
-    },
-    methods: {
-      async getLockerInfo() {
-        try {
-          this.stationName = this.$route.query.endStation;;
-          const response = await fetch(`http://localhost:3001/track-info?stationName=${encodeURIComponent(this.stationName)}`);
-          const data = await response.json();
-          
-          // Extract JSON data (assuming it's before the XML response)
-          const jsonData = JSON.parse(data.split('<?xml')[0]);
-  
-          this.lockerData = jsonData;
-        } catch (error) {
-          console.error(`Error: ${error.message}`);
-        }
+  </div>
+</template>
+
+
+
+<script>
+export default {
+  data() {
+    return {
+      stationName: '', // Store the station name
+      lockerData: []
+    };
+  },
+  methods: {
+    async getLockerInfo() {
+      try {
+        this.stationName = this.$route.query.endStation; // Station name is obtained from the query params
+        const response = await fetch(
+          `http://localhost:3001/track-info?stationName=${encodeURIComponent(this.stationName)}`
+        );
+        const data = await response.json();
+
+        const jsonData = JSON.parse(data.split('<?xml')[0]);
+        this.lockerData = jsonData;
+      } catch (error) {
+        console.error(`Error: ${error.message}`);
       }
-    },
-    mounted() {
-      // 在組件掛載後呼叫 getLockerInfo 方法
-      this.getLockerInfo();
-      console.log(this.lockerData)
     }
-  };
-  </script>
+  },
+  mounted() {
+    this.getLockerInfo();
+  }
+};
+</script>
+
+
+<style scoped>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f4f8;
+  color: #333;
+}
+
+#stationInfo {
+  display: flex;
+  justify-content: center; /* Align center */
+  padding: 10px;
+}
+
+.title {
+  font-size: 2.4rem; /* Increased font size */
+  margin-bottom: 20px;
+  margin-top: 20px;
+  margin-left: 20px;
+  color: #2db6c7;
+  width: 100%;
+  max-width: 700px; /* Increase width to match the locker boxes */
+  text-align: left; /* Align text to the left */
+  padding-left: 0px; /* Remove left padding to shift title */
+}
+
+#result {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin-left: 30px;
+  margin-right: 30px;
+  padding: 1;
+}
+
+.locker-item {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 100%; /* 讓它根據父容器寬度調整 */
+  margin-bottom: 20px;
   
-  <style scoped>
-  /* 全局樣式重置 */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  overflow: hidden;
+  box-sizing: border-box;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* max-width: 800px; 移除這行 */
+}
+
+.locker-item table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.locker-item th,
+.locker-item td {
+  padding: 8px;
+  text-align: center;
+}
+
+.locker-item th {
+  background-color: #2db6c7;
+  color: #fff;
+  width: 40%;
+}
+
+.locker-item td {
+  border-bottom: 1px solid #ddd;
+  width: 60%;
+}
+
+.locker-item tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .locker-item th,
+  .locker-item td {
+    padding: 10px;
   }
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f4f8;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    padding: 20px;
+
+  .title {
+    font-size: 2em; /* Adjusted for smaller screens */
   }
-  h1 {
-    text-align: center;
-    font-size: 2.5em;
-    color: #333;
-    margin-bottom: 30px;
+}
+
+@media (max-width: 500px) {
+  .locker-item th,
+  .locker-item td {
+    padding: 8px;
   }
-  form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 30px;
+
+  .title {
+    font-size: 1.8em; /* Adjusted for even smaller screens */
   }
-  input[type="text"] {
-    padding: 12px 20px;
-    font-size: 16px;
-    width: 300px;
-    border: 2px solid #ddd;
-    border-radius: 25px;
-    outline: none;
-    transition: border 0.3s ease, box-shadow 0.3s ease;
-  }
-  input[type="text"]:focus {
-    border-color: #2db6c7;
-    box-shadow: 0 0 5px rgba(108, 99, 255, 0.5);
-  }
-  button {
-    padding: 12px 20px;
-    font-size: 16px;
-    background-color: #2db6c7;
-    color: #fff;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  button:hover {
-    background-color: #2db6c7;
-    transform: translateY(-2px);
-  }
-  #result {
-    display: flex;
-    justify-content: center; /* 水平置中 */
-    align-items: center;     /* 垂直置中，若有需要可以保留 */
-    width: 100%;
-    max-width: 900px;
-    margin: 20px auto;
-    overflow-x: auto;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-  th, td {
-    padding: 15px;
-    text-align: left;
-  }
-  th {
-    background-color: #2db6c7;
-    color: #fff;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-  td {
-    border-bottom: 1px solid #ddd;
-    color: #555;
-  }
-  tr:hover {
-    background-color: #f9f9f9;
-  }
-  </style>
-  
+}
+</style>
