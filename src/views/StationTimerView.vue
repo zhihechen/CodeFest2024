@@ -325,27 +325,6 @@ const setFavoriteTimer = (route: { start: Station | null; end: Station | null })
 const showAlert = ref(false);
 const countdown = ref(10); // 15分鐘的倒數計時（900秒）
 
-const notifyUser = () => {
-  // 看權限 電腦會通知 手機好像要越
-  if (Notification.permission === 'granted') {
-    showNotification();
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then((permission) => {
-      if (permission === 'granted') {
-        showNotification();
-      }
-    });
-  }
-};
-
-const showNotification = () => {
-  // 通知長怎樣
-  new Notification('Notification', {
-    body: "It's time to get off !!!!!",
-    icon: 'https://via.placeholder.com/100' // 選圖
-  });
-};
-
 let interval: number | undefined;
 
 const startCountdown = () => {
@@ -360,20 +339,37 @@ const startCountdown = () => {
       const audio = new Audio('/440.mp3');
       audio.play();
       clearInterval(interval);
-      alert('時間到！');
-      notifyUser();
+      // alert('時間到！');
+      sendMessage();
       // 讓手機震動 500 毫秒
-      if (navigator.vibrate) {
-        navigator.vibrate(500);
-        alert('震動');
-      } else {
-        alert('沒震動');
-      }
+      // if (navigator.vibrate) {
+      //   navigator.vibrate(500);
+      //   alert('震動');
+      // } else {
+      //   alert('沒震動');
+      // }
     }
   }, 1000);
 };
 
+const sendMessage = () => {
+    const message = JSON.stringify({
+    name:"notify",
+    data: 
+    `{
+        "title": "Notification Title",
+        "body": "This is a notification body"
+    }`
+    // data: `\"{
+    //   \"title\": \"Notification Title\",
+    //   \"body\": \"This is a notification body\"
+    // }\"`
+    });
 
+    console.log("Sending message to Flutter:", message);
+    // Use postMessage to send data to Flutter
+    flutterObject.postMessage(message);
+}
 
 // 根據方向選擇顯示不同的站點
 const getStationsForDirection = (line: MRTLine, direction: 'forward' | 'backward') => {
