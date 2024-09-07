@@ -8,9 +8,6 @@ import { useConnectionMessage } from '@/composables/useConnectionMessage';
 import { useHandleConnectionData } from '@/composables/useHandleConnectionData';
 import ServiceTabsView from '@/components/organisms/ServiceTabsView.vue';
 import BaseInput from '@/components/atoms/BaseInput.vue';
-import ServiceStep from '@/components/molecules/ServiceStep.vue';
-import serviceListJson from '../../public/mock/service_list.json';
-import caseProgressJson from '../../public/mock/case_progress.json';
 import MRTroutes from '../../public/MRTinfo/stations.json';
 import runningTime from '../../public/MRTinfo/running_time.json';
 import type { User } from '@/stores/user';
@@ -107,7 +104,9 @@ interface MRTLine {
   stations: Station[];
 }
 
-const favoriteRoutes = ref<{ start: Station | null; end: Station | null }[]>([]);
+const favoriteRoutes = ref<{ start: Station | null; end: Station | null; line: MRTLine | null }[]>(
+  []
+);
 
 const loadFavoriteRoutes = () => {
   favoriteRoutes.value = store.favoriteRoutes || [];
@@ -115,13 +114,20 @@ const loadFavoriteRoutes = () => {
 loadFavoriteRoutes();
 
 const addFavoriteRoute = () => {
-  if (startStation.value && endStation.value) {
-    favoriteRoutes.value.push({ start: startStation.value, end: endStation.value });
-    store.favoriteRoutes = favoriteRoutes.value; // Save to store
+  if (startStation.value && endStation.value && selectedLine.value) {
+    // Ensure line is selected
+    favoriteRoutes.value.push({
+      start: startStation.value,
+      end: endStation.value,
+      line: selectedLine.value // Add the line value
+    });
+    store.favoriteRoutes = [...favoriteRoutes.value]; // Save to store
     startStation.value = null;
     endStation.value = null;
+    selectedLine.value = null; // Reset the line selection after adding
   }
 };
+
 const removeFavoriteRoute = (index: number) => {
   favoriteRoutes.value.splice(index, 1);
 };
@@ -368,14 +374,14 @@ const getFirstAndLastStation = computed(() => {
 
           <div class="button-container">
             <button
-              v-if="startStation && endStation"
+              v-show="startStation && endStation"
               @click="addFavoriteRoute"
               class="add-favorite-button"
             >
               加入收藏
             </button>
             <button
-              v-if="startStation && endStation"
+              v-show="startStation && endStation"
               @click="startCountdown"
               class="set-alarm-button"
             >
