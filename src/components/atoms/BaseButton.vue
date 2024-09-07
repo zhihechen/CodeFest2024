@@ -64,7 +64,15 @@ const emit = defineEmits({
   }
 
   &--set-alarm-button {
-    @apply bg-yellow-500 text-white; /* 假設「設定鬧鐘」按鈕為綠色 */
+    @apply text-white; 
+    border-color: #D45251;
+    background-color: #D45251;
+    font-weight: 700
+  }
+
+  &--set-collection-button {
+    @apply bg-primary-600 text-white; 
+    font-weight: 700
   }
   
   &:disabled {

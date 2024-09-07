@@ -266,7 +266,7 @@ const onStationSelected = (station: Station) => {
         selectedDirection.value
       ).findIndex((s) => s.code === endStation.value.code);
 
-      if (startIndex > endIndex) {
+      if (startIndex >= endIndex) {
         // alert('起點不能在終點後面。請重新選擇起點站。');
         return;
       }
@@ -296,7 +296,7 @@ const onStationSelected = (station: Station) => {
         selectedDirection.value
       ).findIndex((s) => s.code === station.code);
 
-      if (startIndex > endIndex) {
+      if (startIndex >= endIndex) {
         // alert('終點不能在起點之前。請重新選擇終點站。');
         return;
       }
@@ -315,6 +315,70 @@ const onStationSelected = (station: Station) => {
     }
     endStation.value = station;
   }
+};
+
+const noNeedStation = (station: Station) => {
+  const list1 = ['蘆洲站', '三民高中站', '徐匯中學站', '三和國中站', '三重國小站'];
+  const list2 = [
+    '迴龍站',
+    '丹鳳站',
+    '輔大站',
+    '新莊站',
+    '頭前庄站',
+    '先嗇宮站',
+    '三重站',
+    '菜寮站',
+    '台北橋站'
+  ];
+  // if (selectedStationType.value === 'start') 
+    // 選擇起點站時，檢查終點是否在起點之後
+    if (endStation.value) {
+      const startIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === station.code);
+      const endIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === endStation.value.code);
+
+      if (startIndex > endIndex) {
+        // alert('起點不能在終點後面。請重新選擇起點站。');
+        return true;
+      }
+      if (
+        (list1.includes(station.name) && list2.includes(endStation.value.name)) ||
+        (list2.includes(station.name) && list1.includes(endStation.value.name))
+      ) {
+        return true;
+      }
+    }
+  //   return false;
+  // } else if (selectedStationType.value === 'end') {
+    // 選擇終點站時，檢查起點是否在終點之前
+    if (startStation.value && selectedLine.value) {
+      const startIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === startStation.value?.code);
+      const endIndex = getStationsForDirection(
+        selectedLine.value,
+        selectedDirection.value
+      ).findIndex((s) => s.code === station.code);
+
+      if (startIndex > endIndex) {
+        // alert('終點不能在起點之前。請重新選擇終點站。');
+        return true;
+      }
+      if (
+        (list1.includes(startStation.value.name) && list2.includes(station.name)) ||
+        (list2.includes(startStation.value.name) && list1.includes(station.name))
+      ) {
+        return true;
+      }
+    }
+    return false;
+  // }
 };
 
 const convertedMRTroutes = MRTroutes.map((line) => ({
@@ -375,18 +439,21 @@ let interval: number | undefined;
 const startCountdown = () => {
   showAlert.value = false;
   isSettingAlarm.value = true;
-  countdownTime.value = travelTime.value;
-
+  countdownTime.value = travelTime.value - 30;
+  
   interval = setInterval(() => {
     countdownTime.value--;
-    if (countdownTime.value <= 0) {
-      // 更正為 countdownTime.value
+    if (countdownTime.value <= 0) { // 更正為 countdownTime.value
       // Play sound
-      const audio = new Audio('/440.mp3');
-      audio.play();
+      // const audio = new Audio('/440.mp3');
+      // audio.play();
       clearInterval(interval);
+      isSettingAlarm.value = false;
+      arrivalDialogOpen.value = true;
+      countdownTime.value = travelTime.value - 30;
       // alert('時間到！');
       sendMessage();
+      
       // 讓手機震動 500 毫秒
       // if (navigator.vibrate) {
       //   navigator.vibrate(500);
@@ -402,8 +469,8 @@ const sendMessage = () => {
   const message = JSON.stringify({
     name: 'notify',
     data: `{
-        "title": "Notification Title",
-        "body": "This is a notification body"
+        "title": "即將到站",
+        "body": "點擊以查看更多到站資訊"
     }`
     // data: `\"{
     //   \"title\": \"Notification Title\",
@@ -443,9 +510,9 @@ const getFirstAndLastStation = computed(() => {
           <!-- 固定在頁面頂部的區塊 -->
           <section class="top-section">
             <!-- 彈出視窗按鈕 -->
-            <div class="flex justify-center -mx-4 py-4 shadow-[0_0_6px_0_rgba(0,0,0,0.1)] mt-3">
+            <!-- <div class="flex justify-center -mx-4 py-4 shadow-[0_0_6px_0_rgba(0,0,0,0.1)] mt-3">
               <BaseButton class="w-3/4" @click="arrivalDialogOpen = true">顯示詳細資訊</BaseButton>
-            </div>
+            </div> -->
             <p class="text-grey-500 mt-4 mb-2 px-4">請選擇路線</p>
             <div class="route-buttons-container">
               <button
@@ -481,7 +548,7 @@ const getFirstAndLastStation = computed(() => {
                   <input type="radio" v-model="selectedDirection" value="forward" />
                   {{
                     selectedLine.stations[0].name +
-                    ' -> ' +
+                    ' &rArr; ' +
                     selectedLine.stations[selectedLine.stations.length - 1].name
                   }}
                 </label>
@@ -493,7 +560,7 @@ const getFirstAndLastStation = computed(() => {
                   <input type="radio" v-model="selectedDirection" value="backward" />
                   {{
                     selectedLine.stations[selectedLine.stations.length - 1].name +
-                    ' -> ' +
+                    ' &rArr; ' +
                     selectedLine.stations[0].name
                   }}
                 </label>
@@ -525,7 +592,8 @@ const getFirstAndLastStation = computed(() => {
                     'end-selected': endStation?.code === station.code,
                     'middle-station': getStationsBetween(startStation, endStation).some(
                       (s) => s.code === station.code
-                    )
+                    ),
+                    'no-need-station': noNeedStation(station)
                   }"
                   :style="{ borderColor: getButtonColor(station.line), color: 'black' }"
                 >
@@ -539,7 +607,7 @@ const getFirstAndLastStation = computed(() => {
           <div class="bottom-buttons">
             <BaseButton
               :disabled="!(startStation && endStation)"
-              class="w-1/2 mr-2"
+              class="w-1/2 mr-2 base-button--set-collection-button"
               @click="addFavoriteRoute"
             >
               加入收藏
@@ -580,7 +648,7 @@ const getFirstAndLastStation = computed(() => {
         <BaseDialog
           v-model="arrivalDialogOpen"
           title=""
-          content="列車即將到站，是否顯示詳細資訊？"
+          :content="'列車即將到站，是否顯示車站資訊？'"
           :is-check="true"
           @onPositiveClick="onArrivalClick"
           positiveText="確定"
@@ -588,7 +656,7 @@ const getFirstAndLastStation = computed(() => {
         />
         <BaseDialog
           v-model="isSettingAlarm"
-          :content="'鬧鐘將在 ' + (travelTimeFormatted || '') + ' 響起'"
+          :content="'鬧鐘將在 ' + (travelTimeFormatted || '') + ' 後響起'"
           :is-check="true"
           negative-text="關閉"
           @onNegativeClick="onRemoveClick"
