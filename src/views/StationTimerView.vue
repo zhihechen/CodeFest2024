@@ -14,12 +14,15 @@ import caseProgressJson from '../../public/mock/case_progress.json';
 import MRTroutes from '../../public/MRTinfo/stations.json';
 import runningTime from '../../public/MRTinfo/running_time.json';
 import type { User } from '@/stores/user';
+import '../css/mrtStyles.css'; // 引入你的樣式檔案
 
 const store = useFormStore();
 
 store.reset();
 
 const userStore = useUserStore();
+
+
 
 const { user } = storeToRefs(userStore);
 
@@ -285,12 +288,12 @@ const getFirstAndLastStation = computed(() => {
     <ServiceTabsView v-model="activeTab">
       <template #tab0>
         <div class="py-4">
-          <section class="flex items-center px-4">
+          <!-- <section class="flex items-center px-4">
             <BaseInput v-model="searchValue" placeholder="搜尋捷運站" class="flex-grow" />
             <button class="search-button" @click="onSearchClick">
               <img src="@/assets/images/search-icon.svg" alt="搜尋" />
             </button>
-          </section>
+          </section> -->
           <p class="text-grey-500 mt-4 mb-2 px-4">請選擇路線</p>
           <div class="route-buttons-container">
             <button
@@ -412,243 +415,3 @@ const getFirstAndLastStation = computed(() => {
     </ServiceTabsView>
   </main>
 </template>
-
-<style lang="postcss">
-.search-button {
-  @apply bg-primary-500 p-1 rounded-lg;
-  @apply h-11 w-11;
-  @apply flex justify-center items-center;
-  @apply -translate-x-1;
-}
-.route-buttons-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.9rem;
-}
-.route-button {
-  @apply text-black text-xs p-2 rounded-lg;
-  flex: 1 1 calc(25% - 0.5rem);
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  border-radius: 9999px;
-  background-color: transparent;
-  border: 2px solid;
-  color: black;
-}
-
-.option-title {
-  @apply relative;
-  @apply before:content-[''];
-  @apply before:w-1.5 before:h-0.5;
-  @apply before:bg-primary-500;
-  @apply before:inline-block;
-  @apply before:absolute before:-left-3.5 before:top-1/2 before:-translate-y-1/2;
-}
-
-.situation-button {
-  @apply text-primary-500;
-  @apply first:rounded-l last:rounded-r;
-  @apply border border-primary-500;
-  @apply py-0.5;
-
-  &--active {
-    @apply bg-primary-500 text-white;
-  }
-}
-
-.radio-label-container {
-  margin-top: 2px; /* 調整這個值讓元素靠近上面 */
-}
-
-.radio-label {
-  display: inline-block;
-  padding: 6px 12px; /* 減少內部填充 */
-  margin: 0 5px; /* 減少外部邊距 */
-  border: 2px solid transparent;
-  border-radius: 15px; /* 減少圓角半徑 */
-  font-size: 12px; /* 調整字體大小 */
-  cursor: pointer;
-  transition: background-color 0.3s ease; /* 可以調整或刪除過渡效果 */
-}
-
-.radio-label input {
-  display: none;
-}
-
-.radio-label.start-active {
-  border-color: green;
-  background-color: rgba(0, 255, 0, 0.2); /* 淺綠色 */
-  transition: background-color 0.3s ease; /* 可以調整或刪除過渡效果 */
-}
-
-.radio-label.end-active {
-  border-color: red;
-  background-color: rgba(255, 0, 0, 0.2); /* 淺紅色 */
-  transition: background-color 0.3s ease; /* 可以調整或刪除過渡效果 */
-}
-
-.route-buttons-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem; /* 按鈕之間的間距 */
-  padding: 0.9rem; /* 與畫面邊界的空隙 */
-}
-
-.route-button {
-  @apply text-black text-xs p-2 rounded-lg;
-  flex: 1 1 calc(25% - 0.5rem);
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  border-radius: 9999px; /* 圓角 */
-  background-color: transparent; /* 透明背景 */
-  border: 2px solid; /* 邊框 */
-  color: black; /* 文字顏色 */
-}
-
-.stations-buttons-container {
-  margin-top: 1rem;
-}
-
-.stations-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem; /* 按鈕之間的間距 */
-  padding: 0.9rem; /* 與畫面邊界的空隙 */
-}
-
-.station-button {
-  @apply text-black text-xs p-2 rounded-lg;
-  flex: 1 1 auto;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  border-radius: 9999px; /* 圓角 */
-  background-color: transparent; /* 透明背景 */
-  border: 2px solid; /* 邊框 */
-  color: black; /* 文字顏色 */
-}
-
-/* 起點站按鈕樣式 */
-.station-button.start-selected {
-  background-color: rgba(0, 255, 0, 0.3); /* 半透明綠色 */
-  border-color: green !important;
-  color: black;
-  transition: background-color 0.3s ease;
-}
-
-/* 終點站按鈕樣式 */
-.station-button.end-selected {
-  background-color: rgba(255, 0, 0, 0.3); /* 半透明紅色 */
-  border-color: red !important;
-  color: black;
-  transition: background-color 0.3s ease;
-}
-
-.middle-station {
-  background-color: rgba(128, 128, 128, 0.3); /* 半透明灰色 */
-  border-color: grey;
-  color: black;
-  transition: background-color 0.3s ease;
-}
-
-.buttons-group {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.favorites-container {
-  padding: 1rem;
-}
-
-/* 按鈕選取時樣式 */
-.radio-label.direction-active {
-  border-color: #2db6c7;
-  background-color: #2db6c7;
-  color: white;
-}
-
-.favorite-route {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px;
-  background-color: #f9f9f9;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-.favorite-route button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.favorite-route p {
-  @apply flex-grow;
-}
-.delete-favorite-button {
-  @apply bg-red-500 p-1 rounded-lg text-white;
-  cursor: pointer;
-  border: none;
-}
-.delete-favorite-button:hover {
-  background-color: #ff7875;
-}
-.button-group {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-.set-timer-button {
-  background-color: #1890ff;
-  color: white;
-}
-.favorite-route button:last-child {
-  margin-left: 0;
-}
-
-.favorite-route button:last-child {
-  margin-left: 0;
-}
-.set-timer-button:hover {
-  background-color: #40a9ff;
-}
-.add-favorite-button {
-  @apply bg-primary-500 p-2 rounded-lg text-white;
-  margin-top: 1rem;
-  cursor: pointer;
-  border: none;
-  display: block;
-}
-.set-alarm-button {
-  @apply bg-secondary-500 p-2 rounded-lg text-white;
-  cursor: pointer;
-  border: none;
-  flex: 1;
-}
-.delete-favorite-button {
-  background-color: #ff4d4f;
-  color: white;
-}
-
-/* Countdown Display */
-.countdown-display {
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background-color: #f0f0f0;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: bold;
-}
-</style>
