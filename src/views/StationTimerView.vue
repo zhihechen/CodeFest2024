@@ -19,8 +19,6 @@ store.reset();
 
 const userStore = useUserStore();
 
-
-
 const { user } = storeToRefs(userStore);
 
 const handleUserInfo = (event: { data: string }) => {
