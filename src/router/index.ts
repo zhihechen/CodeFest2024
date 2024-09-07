@@ -11,6 +11,8 @@ import TicketDetail from '../views/TicketDetail.vue';
 import CouponDetail from '../views/CouponDetail.vue';
 import StationTimerView from '../views/StationTimerView.vue';
 import ArrivalView from '@/views/ArrivalView.vue';
+import NoObView from '../views/NoObView.vue';
+import LockerView from '../views/LockerView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +26,16 @@ const router = createRouter({
       path: '/arrival',
       name: 'arrival',
       component: ArrivalView
+    },
+    {
+      path: '/noob',
+      name: 'noob',
+      component: NoObView
+    },
+    {
+      path: '/locker',
+      name: 'locker',
+      component: LockerView
     },
     // {
     //   path: '/',
