@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { useFormStore } from '@/stores/form';
 import { useUserStore } from '@/stores/user';
@@ -11,6 +11,9 @@ import BaseInput from '@/components/atoms/BaseInput.vue';
 import MRTroutes from '../../public/MRTinfo/stations.json';
 import runningTime from '../../public/MRTinfo/running_time.json';
 import type { User } from '@/stores/user';
+import BaseDialog from '@/components/atoms/BaseDialog.vue';
+import BaseButton from '@/components/atoms/BaseButton.vue';
+import colors from '../../public/MRTinfo/mrtColors.json';
 import '../css/mrtStyles.css'; // 引入你的樣式檔案
 
 const store = useFormStore();
@@ -39,7 +42,33 @@ if (route.query.isSearch) {
   activeTab.value = 1;
 }
 
-import colors from '../../public/MRTinfo/mrtColors.json';
+import { useRouter } from 'vue-router';
+
+const arrivalDialogOpen = ref(false);
+const isSettingAlarm = ref(false);
+
+// 彈出視窗的顯示狀態
+const showPopup = ref(false);
+
+// 使用路由
+const router = useRouter();
+
+const onArrivalClick = () => {
+  showPopup.value = false;
+  router.push('/arrival'); // 將 '目標頁面' 替換成你想跳轉的頁面路徑
+};
+
+const onRemoveClick = () => {
+  isSettingAlarm.value = false;
+  if (interval) {
+    clearInterval(interval);
+  }
+};
+
+const removeAlarm = () => {
+  isSettingAlarm.value = false;
+};
+
 
 const calculateTravelTime = (start: Station | null, end: Station | null): number | null => {
   if (!start || !end || !selectedLine.value) {
@@ -114,18 +143,42 @@ const loadFavoriteRoutes = () => {
 };
 loadFavoriteRoutes();
 
+// const addFavoriteRoute = () => {
+//   if (startStation.value && endStation.value && selectedLine.value) {
+//     // Ensure line is selected
+//     favoriteRoutes.value.push({
+//       start: startStation.value,
+//       end: endStation.value,
+//       line: selectedLine.value // Add the line value
+//     });
+//     store.favoriteRoutes = [...favoriteRoutes.value]; // Save to store
+//     // startStation.value = null;
+//     // endStation.value = null;
+//     // selectedLine.value = null; // Reset the line selection after adding
+//   }
+// };
+
 const addFavoriteRoute = () => {
   if (startStation.value && endStation.value && selectedLine.value) {
-    // Ensure line is selected
-    favoriteRoutes.value.push({
-      start: startStation.value,
-      end: endStation.value,
-      line: selectedLine.value // Add the line value
-    });
-    store.favoriteRoutes = [...favoriteRoutes.value]; // Save to store
-    startStation.value = null;
-    endStation.value = null;
-    selectedLine.value = null; // Reset the line selection after adding
+    // 檢查這條路線是否已經在收藏中
+    const isAlreadyAdded = favoriteRoutes.value.some(
+      (route) =>
+        route.start?.code === startStation.value?.code &&
+        route.end?.code === endStation.value?.code &&
+        route.line?.lineid === selectedLine.value?.lineid
+    );
+
+    if (!isAlreadyAdded) {
+      // 如果不存在，則加入收藏
+      favoriteRoutes.value.push({
+        start: startStation.value,
+        end: endStation.value,
+        line: selectedLine.value // Add the line value
+      });
+      store.favoriteRoutes = [...favoriteRoutes.value]; // Save to store
+    } else {
+      console.log("該路線已經存在於收藏中");
+    }
   }
 };
 
@@ -144,14 +197,22 @@ const selectedLine = ref<MRTLine | null>(null);
 const selectedStationType = ref<'start' | 'end'>('start');
 const startStation = ref<Station | null>(null);
 const endStation = ref<Station | null>(null);
+const countdownTime = ref(0);
 
 // 監聽起點站和終點站的變化並計算行車時間
+// 計算 travelTime 的值，處理 null 值
 const travelTime = computed(() => {
-  return calculateTravelTime(startStation.value, endStation.value);
+  const result = calculateTravelTime(startStation.value, endStation.value);
+  // 如果 result 是 null，則返回 0
+  return result ?? 0;
+});
+
+watch(travelTime, (newTravelTime) => {
+  countdownTime.value = newTravelTime;
 });
 
 const travelTimeFormatted = computed(() => {
-  const timeInSeconds = calculateTravelTime(startStation.value, endStation.value);
+  const timeInSeconds = countdownTime.value;
 
   if (timeInSeconds === null) {
     return null;
@@ -163,15 +224,50 @@ const travelTimeFormatted = computed(() => {
   return `${minutes}分${seconds}秒`;
 });
 
+// 在 tab2 的 JS 開始處，新增一個方向選擇變數
+const selectedDirection = ref<'forward' | 'backward'>('forward');
+
+watch(selectedDirection, (newDirection) => {
+    startStation.value = null;
+    endStation.value = null;
+    selectedStationType.value = 'start'
+});
+
+watch(selectedLine, (newLine) => {
+    startStation.value = null;
+    endStation.value = null;
+    selectedStationType.value = 'start'
+});
+
 const onStationSelected = (station: Station) => {
   if (selectedStationType.value === 'start') {
+    // 選擇起點站時，檢查終點是否在起點之後
+    if (endStation.value) {
+      const startIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
+        .findIndex(s => s.code === station.code);
+      const endIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
+        .findIndex(s => s.code === endStation.value.code);
+      
+      if (startIndex > endIndex) {
+        // alert('起點不能在終點後面。請重新選擇起點站。');
+        return;
+      }
+    }
     startStation.value = station;
   } else if (selectedStationType.value === 'end') {
-    endStation.value = station;
-  }
+    // 選擇終點站時，檢查起點是否在終點之前
+    if (startStation.value && selectedLine.value) {
+      const startIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
+        .findIndex(s => s.code === startStation.value?.code);
+      const endIndex = getStationsForDirection(selectedLine.value, selectedDirection.value)
+        .findIndex(s => s.code === station.code);
 
-  if (startStation.value && endStation.value) {
-    console.log('行車時間:', travelTimeFormatted.value);
+      if (startIndex > endIndex) {
+        // alert('終點不能在起點之前。請重新選擇終點站。');
+        return;
+      }
+    }
+    endStation.value = station;
   }
 };
 
@@ -194,12 +290,19 @@ const getStationsBetween = (start: Station | null, end: Station | null): Station
   const startIndex = stations.findIndex((station) => station.code === start.code);
   const endIndex = stations.findIndex((station) => station.code === end.code);
 
-  if (startIndex === -1 || endIndex === -1 || startIndex > endIndex) {
+  if (startIndex === -1 || endIndex === -1) {
     return [];
   }
 
-  return stations.slice(startIndex, endIndex + 1);
+  if (startIndex < endIndex) {
+    // 正向：從起點到終點
+    return stations.slice(startIndex, endIndex + 1);
+  } else {
+    // 反向：從終點到起點
+    return stations.slice(endIndex, startIndex + 1).reverse();
+  }
 };
+
 
 const onRouteSelect = (line: MRTLine) => {
   selectedLine.value = line;
@@ -243,11 +346,16 @@ const showNotification = () => {
   });
 };
 
+let interval: number | undefined;
+
 const startCountdown = () => {
   showAlert.value = false;
-  const interval = setInterval(() => {
-    countdown.value--;
-    if (countdown.value <= 0) {
+  isSettingAlarm.value = true;
+  countdownTime.value = travelTime.value;
+  
+  interval = setInterval(() => {
+    countdownTime.value--;
+    if (countdownTime.value <= 0) { // 更正為 countdownTime.value
       // Play sound
       const audio = new Audio('/440.mp3');
       audio.play();
@@ -265,8 +373,7 @@ const startCountdown = () => {
   }, 1000);
 };
 
-// 在 tab2 的 JS 開始處，新增一個方向選擇變數
-const selectedDirection = ref<'forward' | 'backward'>('forward');
+
 
 // 根據方向選擇顯示不同的站點
 const getStationsForDirection = (line: MRTLine, direction: 'forward' | 'backward') => {
@@ -291,108 +398,103 @@ const getFirstAndLastStation = computed(() => {
   <main>
     <ServiceTabsView v-model="activeTab">
       <template #tab0>
-        <div class="py-4">
-          <!-- <section class="flex items-center px-4">
-            <BaseInput v-model="searchValue" placeholder="搜尋捷運站" class="flex-grow" />
-            <button class="search-button" @click="onSearchClick">
-              <img src="@/assets/images/search-icon.svg" alt="搜尋" />
-            </button>
-          </section> -->
-          <p class="text-grey-500 mt-4 mb-2 px-4">請選擇路線</p>
-          <div class="route-buttons-container">
-            <button
-              v-for="line in convertedMRTroutes"
-              :key="line.lineid"
-              class="route-button"
-              @click="onRouteSelect(line)"
-              :style="{ borderColor: getButtonColor(line.lineid), color: 'black' }"
-            >
-              {{ line.lineName }}
-            </button>
-          </div>
-        </div>
+        <div class="page-container">
+          <!-- 固定在頁面頂部的區塊 -->
+          <section class="top-section">
+            <!-- 彈出視窗按鈕 -->
+            <!-- <div class="flex justify-center -mx-4 py-4 shadow-[0_0_6px_0_rgba(0,0,0,0.1)] mt-3">
+              <BaseButton class="w-3/4" @click="arrivalDialogOpen = true">顯示詳細資訊</BaseButton>
+            </div> -->
+            <p class="text-grey-500 mt-4 mb-2 px-4">請選擇路線</p>
+            <div class="route-buttons-container">
+              <button
+                v-for="line in convertedMRTroutes"
+                :key="line.lineid"
+                class="route-button"
+                :class="{ 'selected-route': selectedLine?.lineid === line.lineid }"
+                @click="onRouteSelect(line)"
+                :style="{ borderColor: getButtonColor(line.lineid), backgroundColor: selectedLine?.lineid === line.lineid ? getButtonColor(line.lineid) : 'transparent' }"
 
-        <!-- 動態顯示選取路線的所有站點 -->
-        <div v-if="selectedLine" class="stations-buttons-container">
-          <!-- 選擇方向 -->
-          <div class="flex items-center justify-center my-2">
-            <label
-              class="radio-label"
-              data-value="forward"
-              :class="{ 'direction-active': selectedDirection === 'forward' }"
-            >
-              <input type="radio" v-model="selectedDirection" value="forward" />
-              {{
-                selectedLine.stations[0].name +
-                ' -> ' +
-                selectedLine.stations[selectedLine.stations.length - 1].name
-              }}
-            </label>
-            <label
-              class="radio-label"
-              data-value="backward"
-              :class="{ 'direction-active': selectedDirection === 'backward' }"
-            >
-              <input type="radio" v-model="selectedDirection" value="backward" />
-              {{
-                selectedLine.stations[selectedLine.stations.length - 1].name +
-                ' -> ' +
-                selectedLine.stations[0].name
-              }}
-            </label>
+                
+              >
+                {{ line.lineName }}
+              </button>
+            </div>
+          </section>
+      
+          <!-- 主內容區域 -->
+          <div class="content">
+            <!-- 動態顯示選取路線的所有站點 -->
+            <section v-if="selectedLine" class="stations-buttons-container">
+              <!-- 選擇方向 -->
+              <div class="flex items-center justify-center my-2">
+                <label
+                  class="radio-label"
+                  data-value="forward"
+                  :class="{ 'direction-active': selectedDirection === 'forward' }"
+                >
+                  <input type="radio" v-model="selectedDirection" value="forward" />
+                  {{
+                    selectedLine.stations[0].name +
+                    ' -> ' +
+                    selectedLine.stations[selectedLine.stations.length - 1].name
+                  }}
+                </label>
+                <label
+                  class="radio-label"
+                  data-value="backward"
+                  :class="{ 'direction-active': selectedDirection === 'backward' }"
+                >
+                  <input type="radio" v-model="selectedDirection" value="backward" />
+                  {{
+                    selectedLine.stations[selectedLine.stations.length - 1].name +
+                    ' -> ' +
+                    selectedLine.stations[0].name
+                  }}
+                </label>
+              </div>
+              <div class="flex items-center justify-center my-2">
+                <label class="radio-label" :class="{ 'start-active': selectedStationType === 'start' }">
+                  <input type="radio" v-model="selectedStationType" value="start" />
+                  選取起點站
+                </label>
+                <label class="radio-label" :class="{ 'end-active': selectedStationType === 'end' }">
+                  <input type="radio" v-model="selectedStationType" value="end" />
+                  選取終點站
+                </label>
+              </div>
+      
+              <!-- 顯示選取的起點和終點 -->
+              <p class="text-grey-500 mt-4 mb-2 px-4">{{ selectedLine.lineName }}的站點</p>
+              <div class="stations-buttons">
+                <button
+                  v-for="station in getStationsForDirection(selectedLine, selectedDirection)"
+                  :key="station.code"
+                  class="station-button"
+                  @click="onStationSelected(station)"
+                  :class="{
+                    'start-selected': startStation?.code === station.code,
+                    'end-selected': endStation?.code === station.code,
+                    'middle-station': getStationsBetween(startStation, endStation).some(
+                      (s) => s.code === station.code
+                    )
+                  }"
+                  :style="{ borderColor: getButtonColor(station.line), color: 'black' }"
+                >
+                  {{ station.code + ' ' + station.name }}
+                </button>
+              </div>
+            </section>
           </div>
-          <div class="flex items-center justify-center my-2">
-            <label class="radio-label" :class="{ 'start-active': selectedStationType === 'start' }">
-              <input type="radio" v-model="selectedStationType" value="start" />
-              選取起點站
-            </label>
-            <label class="radio-label" :class="{ 'end-active': selectedStationType === 'end' }">
-              <input type="radio" v-model="selectedStationType" value="end" />
-              選取終點站
-            </label>
-          </div>
-
-          <!-- 顯示選取的起點和終點 -->
-          <p class="text-grey-500 mt-4 mb-2 px-4">{{ selectedLine.lineName }}的站點</p>
-          <div class="stations-buttons">
-            <button
-              v-for="station in getStationsForDirection(selectedLine, selectedDirection)"
-              :key="station.code"
-              class="station-button"
-              @click="onStationSelected(station)"
-              :class="{
-                'start-selected': startStation?.code === station.code,
-                'end-selected': endStation?.code === station.code,
-                'middle-station': getStationsBetween(startStation, endStation).some(
-                  (s) => s.code === station.code
-                )
-              }"
-              :style="{ borderColor: getButtonColor(station.line), color: 'black' }"
-            >
-              {{ station.code + ' ' + station.name }}
-            </button>
-          </div>
-
-          <div class="button-container">
-            <button
-              v-show="startStation && endStation"
-              @click="addFavoriteRoute"
-              class="add-favorite-button"
-            >
+      
+          <!-- 固定在頁面底部的區塊 -->
+          <div class="bottom-buttons">
+            <BaseButton :disabled="!(startStation && endStation)" class="w-1/2 mr-2" @click="addFavoriteRoute">
               加入收藏
-            </button>
-            <button
-              v-show="startStation && endStation"
-              @click="startCountdown"
-              class="set-alarm-button"
-            >
+            </BaseButton>
+            <BaseButton :disabled="!(startStation && endStation)" class="w-1/2 ml-2 base-button--set-alarm-button" @click="startCountdown">
               設定鬧鐘
-            </button>
-          </div>
-
-          <!-- 顯示倒數計時 -->
-          <div v-if="countdown < 900">
-            <p>鬧鐘將在 {{ Math.floor(countdown / 60) }} 分 {{ countdown % 60 }} 秒後響起。</p>
+            </BaseButton>
           </div>
         </div>
       </template>
@@ -400,21 +502,42 @@ const getFirstAndLastStation = computed(() => {
       <template #tab1>
         <div class="py-4">
           <p class="text-grey-500 mt-4 mb-2 px-4">我的收藏路線</p>
+          
+          
           <div class="favorites-container">
             <div v-for="(route, index) in favoriteRoutes" :key="index" class="favorite-route">
-              <p>{{ route.start?.name }} - {{ route.end?.name }}</p>
-              <button @click="removeFavoriteRoute(index)" class="delete-favorite-button">
-                刪除
-              </button>
-              <button @click="setFavoriteTimer(route)" class="set-timer-button">設定鬧鐘</button>
+              <div class="favorite-content">
+                <div class="color-block" :style="{ backgroundColor: getButtonColor(route.line?.lineid)}">
+                </div>
+                <p>{{ route.start?.name }} - {{ route.end?.name }}</p>
+                <button @click="removeFavoriteRoute(index)" class="delete-favorite-button">
+                  <img src="../assets/images/delete.svg" alt="Delete" class="icon" />
+                </button>
+                <button @click="setFavoriteTimer(route)" class="set-timer-button">
+                  <img src="../assets/images/alarm.svg" alt="Alarm" class="icon" />
+                </button>
+              </div>
             </div>
           </div>
-
-          <!-- Add countdown display here -->
-          <div v-if="countdown.value > 0" class="countdown-display">
-            鬧鐘將在 {{ Math.floor(countdown.value / 60) }} 分 {{ countdown.value % 60 }} 秒後響起。
-          </div>
+        
         </div>
+        <BaseDialog
+          v-model="arrivalDialogOpen"
+          title=""
+          content="列車即將到站，是否顯示詳細資訊？"
+          :is-check="true"
+          @onPositiveClick="onArrivalClick"
+          positiveText="確定"
+          negative-text="取消"
+        />
+        <BaseDialog
+          v-model="isSettingAlarm"
+          :content="'鬧鐘將在 ' + (travelTimeFormatted || '') + ' 響起'"
+          :is-check="true"
+          negative-text="關閉"
+          @onNegativeClick="onRemoveClick"
+        />
+
       </template>
     </ServiceTabsView>
   </main>
