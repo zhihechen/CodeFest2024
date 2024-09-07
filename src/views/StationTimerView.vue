@@ -55,7 +55,10 @@ const router = useRouter();
 
 const onArrivalClick = () => {
   showPopup.value = false;
-  router.push('/arrival'); // 將 '目標頁面' 替換成你想跳轉的頁面路徑
+  router.push({
+    path: '/arrival',
+    query: { endStationLine: endStation.value?.line, endStation: endStation.value?.name }
+  }); // 將 '目標頁面' 替換成你想跳轉的頁面路徑
 };
 
 const onRemoveClick = () => {
@@ -398,9 +401,9 @@ const getFirstAndLastStation = computed(() => {
           <!-- 固定在頁面頂部的區塊 -->
           <section class="top-section">
             <!-- 彈出視窗按鈕 -->
-            <!-- <div class="flex justify-center -mx-4 py-4 shadow-[0_0_6px_0_rgba(0,0,0,0.1)] mt-3">
+            <div class="flex justify-center -mx-4 py-4 shadow-[0_0_6px_0_rgba(0,0,0,0.1)] mt-3">
               <BaseButton class="w-3/4" @click="arrivalDialogOpen = true">顯示詳細資訊</BaseButton>
-            </div> -->
+            </div>
             <p class="text-grey-500 mt-4 mb-2 px-4">請選擇路線</p>
             <div class="route-buttons-container">
               <button
