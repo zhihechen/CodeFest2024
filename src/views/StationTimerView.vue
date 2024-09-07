@@ -63,13 +63,7 @@ const onArrivalClick = () => {
 
 const onRemoveClick = () => {
   isSettingAlarm.value = false;
-  if (interval) {
-    clearInterval(interval);
-  }
-};
-
-const removeAlarm = () => {
-  isSettingAlarm.value = false;
+  countdownTime.value = travelTime.value - 50;
 };
 
 const calculateTravelTime = (start: Station | null, end: Station | null): number | null => {
@@ -210,7 +204,7 @@ const travelTime = computed(() => {
 });
 
 watch(travelTime, (newTravelTime) => {
-  countdownTime.value = newTravelTime;
+  countdownTime.value = newTravelTime - 50;
 });
 
 const travelTimeFormatted = computed(() => {
@@ -436,31 +430,42 @@ const countdown = ref(10); // 15分鐘的倒數計時（900秒）
 
 let interval: number | undefined;
 
-const startCountdown = () => {
-  showAlert.value = false;
-  isSettingAlarm.value = true;
-  countdownTime.value = travelTime.value - 30;
+// const startCountdown = () => {
+//   showAlert.value = false;
+//   isSettingAlarm.value = true;
+//   countdownTime.value = travelTime.value - 30;
   
+//   interval = setInterval(() => {
+//     countdownTime.value--;
+//     if (countdownTime.value <= 0) { // 更正為 countdownTime.value
+//       clearInterval(interval);
+//       isSettingAlarm.value = false;
+//       arrivalDialogOpen.value = true;
+//       countdownTime.value = travelTime.value - 30;
+//       sendMessage();
+//     }
+//   }, 1000);
+// };
+let startTime = null;
+const startCountdown = () => {
+  isSettingAlarm.value = true;
+  startTime = Date.now();
+  const targetTime = startTime + (countdownTime.value) * 1000; // 設定目標時間
+
   interval = setInterval(() => {
-    countdownTime.value--;
-    if (countdownTime.value <= 0) { // 更正為 countdownTime.value
-      // Play sound
-      // const audio = new Audio('/440.mp3');
-      // audio.play();
+    const currentTime = Date.now();
+    countdownTime.value = Math.floor((targetTime - currentTime) / 1000); // 計算剩餘秒數
+    if (!isSettingAlarm.value) {
+      countdownTime.value = travelTime.value - 50;
       clearInterval(interval);
+      return;
+    }
+    if (countdownTime.value <= 0) {
       isSettingAlarm.value = false;
+      countdownTime.value = travelTime.value - 50;
       arrivalDialogOpen.value = true;
-      countdownTime.value = travelTime.value - 30;
-      // alert('時間到！');
+      clearInterval(interval);
       sendMessage();
-      
-      // 讓手機震動 500 毫秒
-      // if (navigator.vibrate) {
-      //   navigator.vibrate(500);
-      //   alert('震動');
-      // } else {
-      //   alert('沒震動');
-      // }
     }
   }, 1000);
 };
@@ -649,15 +654,16 @@ const getFirstAndLastStation = computed(() => {
           v-model="arrivalDialogOpen"
           title=""
           :content="'列車即將到站，是否顯示車站資訊？'"
-          :is-check="true"
+          :is-scheck="true"
           @onPositiveClick="onArrivalClick"
           positiveText="確定"
           negative-text="取消"
         />
         <BaseDialog
           v-model="isSettingAlarm"
+          title=""
           :content="'鬧鐘將在 ' + (travelTimeFormatted || '') + ' 後響起'"
-          :is-check="true"
+          :is-settingAlarm="true"
           negative-text="關閉"
           @onNegativeClick="onRemoveClick"
         />

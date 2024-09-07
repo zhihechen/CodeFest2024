@@ -1,18 +1,48 @@
+<template>
+  <div class="container">
+    <h1 class="title">{{ endStation }} 轉乘資訊</h1>
+    <div class="favorites-container">
+      <template v-if="trackInfo && trackInfo.length > 0">
+        <div v-for="(item, index) in trackInfo" :key="index" class="favorite-route">
+          <div class="favorite-content">
+            <div class="color-block" :style="{ backgroundColor: getButtonColor(lines[0]?.lineid) }"></div>
+            <p>往 {{ item.DestinationName }}</p>
+            <div class="time-info">
+              <template v-if="item.CountDown.includes(':')">
+                {{ item.CountDown }} 後到站
+              </template>
+              <template v-else-if="item.CountDown == '營運時間已過'">
+                營運時間已過
+              </template>
+              <template v-else>
+                <span class="warning-text">即將進站</span>
+              </template>
+            </div> 
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <div class="no-info-container">
+          <img :src="logo" alt="Logo" class="logo" />
+          <p class="no-info-message">本站無轉乘資訊</p>
+        </div>
+      </template>
+    </div>
+  </div>
+</template>
+
 <script>
 import colors from '../../public/MRTinfo/mrtColors.json';
 import '../css/mrtStyles.css'; // 引入你的樣式檔案
 import stationsData from '../../public/MRTinfo/stations.json';
-
-// const getButtonColor = (lineid) => {
-//   return colors[lineid] || '#000000';
-// };
-
+import logo from '@/assets/images/logo.svg'; // Use import for SVG
 export default {
   data() {
     return {
       stationName: '',
       trackInfo: [],
-      errorMessage: ''
+      errorMessage: '',
+      logo // Adjust the path to match your project structure
     };
   },
   computed: {
@@ -26,7 +56,7 @@ export default {
 
   methods: {
     getInfo() {
-      console.log("Station: ", this.endStation)
+      console.log("Station: ", this.endStation);
       const stationNameEncoded = encodeURIComponent(this.endStation);
       fetch(`http://localhost:3000/track-info?stationName=${stationNameEncoded}`)
         .then((response) => response.json())
@@ -42,7 +72,7 @@ export default {
             const targetLine = stationsData.find(line => line.lineid === targetLineId);
             
             const targetStations = targetLine ? new Set(targetLine.stations.map(station => station[2])) : new Set();
-            console.log("targetStations: ", targetStations)
+            console.log("targetStations: ", targetStations);
             // 過濾掉不在目標線路中的站點
             this.trackInfo = data.filter(item => !targetStations.has(item.DestinationName));
           }
@@ -110,67 +140,51 @@ export default {
 };
 </script>
 
-<template>
-  <div class="py-4">
-    <p class="text-grey-500 mt-4 mb-2 px-4">{{ endStation }} 轉乘資訊</p>
-    <!-- <p>{{ endStation }}</p> -->
-    <div class="favorites-container">
-        <div v-for="(item, index) in trackInfo" :key="index" class="favorite-route">
-          <div class="favorite-content">
-            <div class="color-block" :style="{ backgroundColor: getButtonColor(lines[0]?.lineid) }"></div>
-            <p>往 {{ item.DestinationName }}</p>
-            <div class="time-info">
-              <template v-if="item.CountDown.includes(':')">
-                {{ item.CountDown }} 後到站
-              </template>
-              <template v-else-if="item.CountDown == '營運時間已過'">
-                營運時間已過
-              </template>
-              <template v-else>
-                <span class="warning-text">即將進站</span>
-              </template>
-            </div> 
-          </div>
-        </div>
-        <!-- <div class="favorites-container">
-          <div v-for="(route, index) in favoriteRoutes" :key="index" class="favorite-route">
-            <div class="favorite-content">
-              <div class="color-block" :style="{ backgroundColor: getButtonColor(route.line?.lineid)}">
-              </div>
-              <p>{{ route.start?.name }} - {{ route.end?.name }}</p>
-              <button @click="removeFavoriteRoute(index)" class="delete-favorite-button">
-                <img src="../assets/images/delete.svg" alt="Delete" class="icon" />
-              </button>
-              <button @click="setFavoriteTimer(route)" class="set-timer-button">
-                <img src="../assets/images/alarm.svg" alt="Alarm" class="icon" />
-              </button>
-            </div>
-          </div>
-        </div> -->
-      </div>
-      
-      <!-- <div v-for="(route, index) in favoriteRoutes" :key="index" class="favorite-route">
-        <div class="favorite-content">
-          <div class="color-block" :style="{ backgroundColor: getButtonColor(route.line?.lineid)}">
-          </div>
-          <p>{{ route.start?.name }} - {{ route.end?.name }}</p>
-          <button @click="removeFavoriteRoute(index)" class="delete-favorite-button">
-            <img src="../assets/images/delete.svg" alt="Delete" class="icon" />
-          </button>
-          <button @click="setFavoriteTimer(route)" class="set-timer-button">
-            <img src="../assets/images/alarm.svg" alt="Alarm" class="icon" />
-          </button>
-        </div>
-      </div> -->
-
-  </div>
-</template> 
-
 <style scoped>
-  .error {
-    color: red;
-  }
-  .warning-text {
-    color: red;
-  }
+.container {
+  min-height: 100vh;
+  max-width: 100%;
+  padding: 15px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2db6c7;
+}
+.no-info-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  margin: 0; /* Ensure no extra margin */
+  padding: 0; /* Ensure no extra padding */
+  overflow: hidden; /* Prevent overflow */
+}
+
+.logo {
+  width: 100px; /* Adjust the width of the logo */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 16px; /* Space between the logo and the text */
+}
+
+.no-info-message {
+  font-size: 24px;
+  font-weight: bold;
+  color: #6B7280; /* Same color as the title 'text-grey-500' */
+  text-align: center;
+}
+
+.error {
+  color: red;
+}
+
+.warning-text {
+  color: red;
+}
 </style>

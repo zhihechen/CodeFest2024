@@ -8,6 +8,7 @@ const props = defineProps<{
   positiveText?: string;
   isAlert?: boolean;
   isCheck?: boolean;
+  isSettingAlarm?: boolean;
 }>();
 
 const emit = defineEmits(['onPositiveClick', 'onNegativeClick']);
@@ -51,6 +52,9 @@ const onNegativeClick = () => {
               </div>
               <div v-else-if="props.isCheck" class="flex justify-center">
                 <img src="@/assets/images/check-icon.svg" class="w-24" />
+              </div>
+              <div v-else-if="props.isSettingAlarm" class="flex justify-center">
+                <img src="@/assets/images/setAlarm.svg" class="w-24" />
               </div>
               <DialogTitle v-if="props.title" class="text-xl text-center font-extrabold">
                 {{ title }}

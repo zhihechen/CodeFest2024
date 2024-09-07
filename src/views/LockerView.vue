@@ -1,9 +1,10 @@
 <template>
-  <div>
-    <div id="stationInfo">
+  <div class="container">
+    <!-- <div id="stationInfo">
       <h1 class="title" v-if="stationName">{{ stationName }}置物櫃</h1>
-    </div>
-    <div id="result">
+    </div> -->
+    <h1 class="title">{{ stationName }}置物櫃</h1>
+    <div id="result" style="margin-top: 20px;">
       <div v-if="lockerData.length > 0" id="resultList">
         <div v-for="item in lockerData" :key="item.StationName + item.Size" class="locker-item">
           <table>
@@ -76,6 +77,15 @@ body {
   color: #333;
 }
 
+.container {
+  min-height: 100vh;
+  max-width: 100%;
+  padding: 15px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 #stationInfo {
   display: flex;
   justify-content: center; /* Align center */
@@ -83,15 +93,10 @@ body {
 }
 
 .title {
-  font-size: 2.4rem; /* Increased font size */
+  font-size: 1.8rem;
+  text-align: center;
   margin-bottom: 20px;
-  margin-top: 20px;
-  margin-left: 20px;
   color: #2db6c7;
-  width: 100%;
-  max-width: 700px; /* Increase width to match the locker boxes */
-  text-align: left; /* Align text to the left */
-  padding-left: 0px; /* Remove left padding to shift title */
 }
 
 #result {
