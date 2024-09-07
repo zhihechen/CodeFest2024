@@ -71,7 +71,7 @@ const tiles = [
     <h1 class="station-name" :style="{ backgroundColor: stationColor }">
       {{ stationID + ' ' + endStation }}
     </h1>
-    <h2 class="main-heading">請選擇所需服務</h2>
+    <p class="text-grey-500 mt-4 mb-2 px-4">請選擇所需服務</p>
     <div class="tiles-container">
       <template v-for="tile in tiles" :key="tile.id">
         <router-link 
