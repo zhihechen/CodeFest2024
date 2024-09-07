@@ -1,17 +1,17 @@
 <template>
     <div class="container">
-      <h1 class="title">🚉 捷運站無障礙資訊查詢</h1>
-      <div class="search-container">
+      <h1 class="title">捷運站無障礙資訊查詢</h1>
+      <!-- <div class="search-container">
         <input
           v-model="stationName"
           placeholder="輸入車站名稱"
           class="search-input"
         />
         <button @click="fetchStationInfo" class="search-button">查詢</button>
-      </div>
+      </div> -->
   
       <div v-if="stationInfo" class="info-card">
-        <h2 class="station-title">{{ stationInfo.車站名稱 }}無障礙資訊</h2>
+        <p class="text-grey-500 mt-4 mb-2 px-4">{{ stationInfo.車站名稱 }}無障礙資訊</p>
         <p><strong>🚪 出口電梯/無障礙坡道位置：</strong>{{ stationInfo['出口電梯/無障礙坡道位置'] }}</p>
         <p><strong>🛂 無障礙閘門位置：</strong>{{ stationInfo.無障礙閘門位置 }}</p>
         <p><strong>🚻 無障礙廁所位置：</strong>{{ stationInfo.無障礙廁所位置 }}</p>
@@ -40,22 +40,25 @@
         this.stationInfo = null;
         this.errorMessage = '';
   
-        if (!this.stationName.trim()) {
-          this.errorMessage = '請輸入有效的車站名稱';
-          return;
-        }
+        // if (!this.stationName.trim()) {
+        //   this.errorMessage = '請輸入有效的車站名稱';
+        //   return;
+        // }
   
         try {
-          const response = await fetch('/station_data.json');
+          console.log("hi")
+          const response = await fetch('../../public/station_data.json');
           if (!response.ok) {
             throw new Error('Failed to fetch station data');
           }
+          this.stationName = this.$route.query.endStation;
           this.stationData = await response.json();
-  
+
+          console.log("this.stationName: ", this.stationName)
           const station = this.stationData.find(
             (item) => item.車站名稱 === this.stationName.trim()
           );
-  
+          
           if (station) {
             this.stationInfo = station;
           } else {
@@ -66,6 +69,9 @@
           this.errorMessage = '無法讀取資料，請稍後再試。';
         }
       }
+    },
+    mounted () {
+      this.fetchStationInfo();
     }
   };
   </script>

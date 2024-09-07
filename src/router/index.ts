@@ -12,6 +12,7 @@ import CouponDetail from '../views/CouponDetail.vue';
 import StationTimerView from '../views/StationTimerView.vue';
 import ArrivalView from '@/views/ArrivalView.vue';
 import NoObView from '../views/NoObView.vue';
+import TransferView from '../views/TransferView.vue';
 import LockerView from '../views/LockerView.vue';
 
 const router = createRouter({
@@ -36,6 +37,11 @@ const router = createRouter({
       path: '/locker',
       name: 'locker',
       component: LockerView
+    },
+    {
+      path: '/transfer',
+      name: 'transfer',
+      component: TransferView
     },
     // {
     //   path: '/',

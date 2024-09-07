@@ -57,7 +57,7 @@ const onArrivalClick = () => {
   showPopup.value = false;
   router.push({
     path: '/arrival',
-    query: { endStationLine: endStation.value?.line, endStation: endStation.value?.name }
+    query: { endStationLine: endStation.value?.line, endStation: endStation.value?.name, stationid: endStation.value?.code }
   }); // 將 '目標頁面' 替換成你想跳轉的頁面路徑
 };
 

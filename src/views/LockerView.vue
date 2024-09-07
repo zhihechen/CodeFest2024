@@ -1,10 +1,10 @@
 <template>
     <div>
       <h1>置物櫃查詢</h1>
-      <form @submit.prevent="getLockerInfo">
+      <!-- <form @submit.prevent="getLockerInfo">
         <input type="text" v-model="stationName" placeholder="請輸入站名" required />
         <button type="submit">取得資訊</button>
-      </form>
+      </form> -->
   
       <div id="result">
         <table v-if="lockerData.length > 0" id="resultTable">
@@ -44,7 +44,8 @@
     methods: {
       async getLockerInfo() {
         try {
-          const response = await fetch(`http://localhost:3000/track-info?stationName=${encodeURIComponent(this.stationName)}`);
+          this.stationName = this.$route.query.endStation;;
+          const response = await fetch(`http://localhost:3001/track-info?stationName=${encodeURIComponent(this.stationName)}`);
           const data = await response.json();
           
           // Extract JSON data (assuming it's before the XML response)
@@ -55,6 +56,11 @@
           console.error(`Error: ${error.message}`);
         }
       }
+    },
+    mounted() {
+      // 在組件掛載後呼叫 getLockerInfo 方法
+      this.getLockerInfo();
+      console.log(this.lockerData)
     }
   };
   </script>

@@ -10,6 +10,7 @@ import accessicon from '../iconsinuse/access.svg';
 const route = useRoute();
 const endStation = route.query.endStation as string;
 let endStationLine = route.query.endStationLine as string | string[];
+const stationID = route.query.stationid as string;
 
 // Ensure that endStationLine is a string
 if (Array.isArray(endStationLine)) {
@@ -49,7 +50,7 @@ const tiles = [
     subtitle: 'Transfer Info',
     icon: transicon,
     size: 'medium',
-    route: '/coupon',
+    route: '/transfer',
     external: false
   },
   {
@@ -68,12 +69,16 @@ const tiles = [
   <div class="station-page">
     <h2 class="main-heading">您將抵達</h2>
     <h1 class="station-name" :style="{ backgroundColor: stationColor }">
-      {{ endStation }}
+      {{ stationID + ' ' + endStation }}
     </h1>
     <h2 class="main-heading">請選擇所需服務</h2>
     <div class="tiles-container">
       <template v-for="tile in tiles" :key="tile.id">
-        <router-link v-if="!tile.external" :to="tile.route" class="tile-link">
+        <router-link 
+        v-if="!tile.external" 
+        :to="{ path: tile.route, query: { endStation: endStation, endStationLine: endStationLine } }"
+        class="tile-link"
+        >
           <div :class="['tile', `tile-${tile.size}`]">
             <div class="tile-content">
               <div class="tile-icon">

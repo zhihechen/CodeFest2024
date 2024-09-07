@@ -283,7 +283,7 @@
 .page-container {
   display: flex;
   flex-direction: column;
-  height: 95vh; /* 確保頁面高度充滿整個視窗 */
+  height: 90vh; /* 確保頁面高度充滿整個視窗 */
 }
 
 .top-section {
