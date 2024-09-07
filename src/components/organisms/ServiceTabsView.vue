@@ -6,11 +6,11 @@ const props = withDefaults(defineProps<TabsProps>(), {
   tabList: () => [
     {
       id: 1,
-      title: '申辦'
+      title: '捷運計時器' // 新增的分頁
     },
     {
       id: 2,
-      title: '查詢'
+      title: '我的最愛' // 新增的分頁
     }
   ],
   contentType: false
