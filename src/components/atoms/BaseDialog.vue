@@ -62,7 +62,7 @@ const onNegativeClick = () => {
 
               <div
                 class="mt-auto py-1 border-t-gray-200 border-t"
-                :class="{ 'grid grid-cols-2': negativeText }"
+                :class="{ 'grid grid-cols-2': props.positiveText, 'flex justify-center': !props.positiveText }"
               >
                 <button
                   v-if="props.negativeText"
@@ -73,6 +73,7 @@ const onNegativeClick = () => {
                   {{ negativeText }}
                 </button>
                 <button
+                  v-if="props.positiveText"
                   type="button"
                   class="flex justify-center text-primary-500 font-bold w-full py-1 outline-none"
                   @click="onPositiveClick"

@@ -63,6 +63,14 @@ const emit = defineEmits({
     @apply text-black bg-gray-300;
   }
 
+  &--set-alarm-button {
+    @apply bg-yellow-500 text-white; /* 假設「設定鬧鐘」按鈕為綠色 */
+  }
+  
+  &:disabled {
+    @apply text-black bg-gray-300;
+  }
+
   &--rounded {
     @apply rounded-full;
   }
@@ -71,4 +79,7 @@ const emit = defineEmits({
     @apply rounded-lg;
   }
 }
+
+
+
 </style>

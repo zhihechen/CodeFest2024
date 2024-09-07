@@ -10,6 +10,7 @@ import HotSpotView from '../views/HotSpotView.vue';
 import TicketDetail from '../views/TicketDetail.vue';
 import CouponDetail from '../views/CouponDetail.vue';
 import StationTimerView from '../views/StationTimerView.vue';
+import ArrivalView from '@/views/ArrivalView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,6 +19,11 @@ const router = createRouter({
       path: '/',
       name: 'stationtimer',
       component: StationTimerView
+    },
+    {
+      path: '/arrival',
+      name: 'arrival',
+      component: ArrivalView
     },
     // {
     //   path: '/',

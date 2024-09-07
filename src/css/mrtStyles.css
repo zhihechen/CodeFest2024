@@ -4,24 +4,33 @@
   @apply flex justify-center items-center;
   @apply -translate-x-1;
 }
+
 .route-buttons-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0.9rem;
+  flex-wrap: wrap; /* 確保按鈕能換行 */
+  gap: 1rem; /* 控制按鈕之間的間距 */
+  justify-content: space-between; /* 保證按鈕之間均勻分佈 */
 }
+
 .route-button {
-  @apply text-black text-xs p-2 rounded-lg;
-  flex: 1 1 calc(25% - 0.5rem);
+  @apply text-black text-xs p-2 rounded-lg; /* 使用 Tailwind 樣式 */
+  flex: 1 1 calc(33.333% - 1rem); /* 每個按鈕佔據1/3的寬度，並減去間距 */
+  min-width: calc(33.333% - 1rem); /* 限制最大寬度為1/3行寬 */
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  border-radius: 9999px;
-  background-color: transparent;
-  border: 2px solid;
+  border-radius: 9999px; /* 圓角按鈕 */
+  background-color: transparent; /* 透明背景 */
+  border: 2px solid; /* 邊框顏色應根據需要設置 */
   color: black;
+  transition: background-color 0.3s ease, color 0.3s ease; /* 增加過渡效果 */
+}
+
+.route-button.selected-route {
+  color: white;
+  font-weight: 600;
 }
 
 .option-title {
@@ -150,15 +159,14 @@
   margin-top: 1rem;
 }
 
-.favorites-container {
-  padding: 1rem;
-}
+
 
 /* 按鈕選取時樣式 */
 .radio-label.direction-active {
   border-color: #2db6c7;
   background-color: #2db6c7;
   color: white;
+  font-weight: 700;
 }
 
 .favorite-route {
@@ -181,34 +189,15 @@
 .favorite-route p {
   @apply flex-grow;
 }
-.delete-favorite-button {
-  @apply bg-red-500 p-1 rounded-lg text-white;
-  cursor: pointer;
-  border: none;
-}
-.delete-favorite-button:hover {
-  background-color: #ff7875;
-}
+
+
 .button-group {
   display: flex;
   gap: 1rem;
   align-items: center;
 }
-.set-timer-button {
-  background-color: #1890ff;
-  color: white;
-}
-.favorite-route button:last-child {
-  margin-left: 0;
-}
 
-.favorite-route button:last-child {
-  margin-left: 0;
-}
-.set-timer-button:hover {
-  background-color: #40a9ff;
-}
-.add-favorite-button {
+/* .add-favorite-button {
   @apply bg-primary-500 p-2 rounded-lg text-white;
   margin-top: 1rem;
   cursor: pointer;
@@ -220,11 +209,8 @@
   cursor: pointer;
   border: none;
   flex: 1;
-}
-.delete-favorite-button {
-  background-color: #ff4d4f;
-  color: white;
-}
+} */
+
 
 /* Countdown Display */
 .countdown-display {
@@ -234,4 +220,189 @@
   border-radius: 8px;
   text-align: center;
   font-weight: bold;
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999; /* 確保彈出視窗位於頂層 */
+  }
+  
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+
+.popup-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  color: #333; /* 深色字體 */
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.confirm-button {
+  @apply bg-primary-500 text-white p-2 rounded-lg;
+  width: 48%; /* 調整按鈕寬度 */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-button:hover {
+  background-color: #1a73e8; /* 更深的 hover 效果 */
+}
+
+.cancel-button {
+  @apply bg-secondary-500 text-white p-2 rounded-lg;
+  width: 48%; /* 調整按鈕寬度 */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+  
+.cancel-button:hover {
+  background-color: #ff7875; /* hover 時的取消按鈕背景色 */
+}
+
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 95vh; /* 確保頁面高度充滿整個視窗 */
+}
+
+.top-section {
+  background-color: white;
+  padding: 0rem;
+  z-index: 10; /* 確保頂部區塊在其他內容之上 */
+}
+
+.content {
+  flex: 1; /* 使內容區域自動填充剩餘空間 */
+  overflow-y: auto; /* 使內容區域可以垂直滾動 */
+  padding-top: 0rem; /* 預留出固定區塊的空間 */
+  padding-bottom: 5rem; /* 預留出底部按鈕的空間 */
+}
+
+
+.bottom-buttons {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between; /* 讓兩個按鈕並排 */
+  z-index: 15;
+}
+
+.set-alarm-button {
+  @apply bg-yellow-500 text-white; /* 假設「設定鬧鐘」按鈕為綠色 */
+}
+
+
+
+/* 收藏分頁 */
+.py-4 {
+  padding-top: 16px; /* 根據需要調整 */
+  padding-bottom: 16px; /* 根據需要調整 */
+}
+
+.favorites-container {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* 每個收藏項目之間的間距 */
+}
+
+.favorite-route {
+  display: flex;
+  align-items: center;
+  background-color: #fff; /* 背景顏色 */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+
+.color-block {
+  width: 5px; /* 可以調整寬度 */
+  height: 18px; /* 可以調整高度 */
+  background-color: #ff0000; /* 可以調整顏色 */
+  margin-left: 8px;
+  margin-right: 8px;
+  border-radius: 1px; /* 圓角半徑，可根據需要調整 */
+}
+
+.favorite-content {
+  display: flex;
+  align-items: center;
+  flex: 1; /* 使內容部分佔滿剩餘的空間 */
+}
+
+.favorite-content p {
+  margin: 0;
+  flex: 1; /* 使文字部分佔滿剩餘的空間 */
+}
+
+
+.favorite-route button {
+  padding: 4px; /* 調整按鈕的內邊距 */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-favorite-button {
+  background-color: #ff4d4f; /* 刪除按鈕的背景顏色 */
+  color: white;
+  width: 32px; /* 按鈕寬度 */
+  height: 32px; /* 按鈕高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px; /* 右邊距 */
+}
+
+.delete-favorite-button img {
+  width: 16px; /* 圖示的寬度 */
+  height: 16px; /* 圖示的高度 */
+}
+
+.delete-favorite-button:hover {
+  background-color: #ff7875; /* Hover 時的背景顏色 */
+}
+
+.set-timer-button {
+  background-color: #2db6c7;
+  color: white;
+  width: 32px; /* 按鈕寬度 */
+  height: 32px; /* 按鈕高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.set-timer-button:hover {
+  background-color: #137986; /* Hover 時的背景顏色 */
 }
