@@ -276,6 +276,12 @@ const onStationSelected = (station: Station) => {
       ) {
         return;
       }
+      if (
+        (list1.includes(station.name) && list2.includes(endStation.value.name)) ||
+        (list2.includes(station.name) && list1.includes(endStation.value.name))
+      ) {
+        return;
+      }
     }
     startStation.value = station;
   } else if (selectedStationType.value === 'end') {
@@ -292,6 +298,12 @@ const onStationSelected = (station: Station) => {
 
       if (startIndex > endIndex) {
         // alert('終點不能在起點之前。請重新選擇終點站。');
+        return;
+      }
+      if (
+        (list1.includes(startStation.value.name) && list2.includes(station.name)) ||
+        (list2.includes(startStation.value.name) && list1.includes(station.name))
+      ) {
         return;
       }
       if (
