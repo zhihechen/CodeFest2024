@@ -36,3 +36,6 @@ pnpm build
 ```sh
 pnpm lint
 ```
+
+### DEMO Video
+https://youtube.com/shorts/BtQjk16fsNw?feature=shared
